@@ -1,0 +1,77 @@
+{#
+Copyright 2019 Nokia
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+#}
+---
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  name: flannel-ds
+  namespace: kube-system
+  labels:
+    tier: node
+    {{ caas.kubernetes_component_label }}: flannel
+spec:
+  selector:
+    matchLabels:
+      {{ caas.kubernetes_component_label }}: flannel
+  template:
+    metadata:
+      labels:
+        tier: node
+        {{ caas.kubernetes_component_label }}: flannel
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+     # TODO: figure out why flannel needs to run with root to modify network settings on the host
+     # Some setcap calls might be missing on its binary?
+     #securityContext:
+     #     runAsUser: {{ caas.uid.flannel }}
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: kube-flannel
+        image: {{ container_image_names | select('search', '/flannel') | list | last }}
+        command:
+        - /opt/bin/flanneld
+        args:
+        - --ip-masq
+        - --kube-subnet-mgr
+        - --iface={{ networking.infra_internal.interface }}
+        securityContext:
+          privileged: true
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: run
+          mountPath: /run
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
+      volumes:
+        - name: run
+          hostPath:
+            path: /run
+        - name: flannel-cfg
+          configMap:
+            name: flannel-cm
+      serviceAccountName: flannel
