@@ -14,9 +14,9 @@
 
 %define COMPONENT netwatcher
 %define RPM_NAME caas-%{COMPONENT}
-%define RPM_MAJOR_VERSION 3.2.0
+%define RPM_MAJOR_VERSION 3.3.0
 %define RPM_MINOR_VERSION 1
-%define DANM_VERSION b48eb154a7f81fcafb0ff9e5b7d3ca6b54e6565a
+%define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 
 Name:           %{RPM_NAME}

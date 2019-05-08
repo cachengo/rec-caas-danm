@@ -14,10 +14,10 @@
 
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
-%define RPM_MAJOR_VERSION 3.2.0
+%define RPM_MAJOR_VERSION 3.3.0
 %define RPM_MINOR_VERSION 1
+%define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define CNI_VERSION 0.7.0
-%define DANM_VERSION b48eb154a7f81fcafb0ff9e5b7d3ca6b54e6565a
 %define go_version 1.12.1
 %define SRIOV_VERSION 6b53446e5781570c44e399cccb1fcdfa417f43a1
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
@@ -87,7 +87,7 @@ rsync -av cni-config/flannel.conf %{buildroot}/etc/cni/net.d/flannel.conf
 mkdir -p %{buildroot}/opt/cni/bin/
 # Generic CNI plugins
 # Don't use the standard ipvlan binary \
-# Dont't use portmap, quick fix for CVE-2019-9946 \
+# Don't use portmap, quick fix for CVE-2019-9946 \
 rsync -av \
       --chmod=go+rx,u+rwx \
       --exclude=ipvlan \

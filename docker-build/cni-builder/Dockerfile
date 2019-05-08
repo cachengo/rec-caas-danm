@@ -49,7 +49,8 @@ RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 &&  mkdir -p $GOPATH/src/github.com/nokia \
 &&  git clone https://github.com/nokia/danm.git $GOPATH/src/github.com/nokia/danm \
 &&  cd $GOPATH/src/github.com/nokia/danm \
-&&  git checkout ${NETWATCHER_VERSION} \
+&&  git fetch --tags \
+&&  git checkout ${DANM_VERSION} \
 &&  glide install --strip-vendor \
 &&  go get -d github.com/vishvananda/netlink \
 &&  go get github.com/containernetworking/plugins/pkg/ns \
