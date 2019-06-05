@@ -34,6 +34,7 @@ RUN apk add --no-cache --virtual .tools ca-certificates gcc musl-dev go glide gi
 &&  mkdir -p $GOPATH/src/github.com/nokia \
 &&  git clone https://github.com/nokia/danm.git $GOPATH/src/github.com/nokia/danm \
 &&  cd $GOPATH/src/github.com/nokia/danm \
+&&  git fetch --tags \
 &&  git checkout ${NETWATCHER_VERSION} \
 &&  glide install --strip-vendor \
 &&  go get -d github.com/vishvananda/netlink \
