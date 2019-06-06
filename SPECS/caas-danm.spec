@@ -15,7 +15,7 @@
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 3.3.0
-%define RPM_MINOR_VERSION 1
+%define RPM_MINOR_VERSION 2
 %define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define CNI_VERSION 0.7.0
 %define go_version 1.12.1

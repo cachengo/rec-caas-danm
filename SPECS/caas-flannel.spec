@@ -15,7 +15,7 @@
 %define COMPONENT flannel
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 0.11.0
-%define RPM_MINOR_VERSION 1
+%define RPM_MINOR_VERSION 2
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 
 Name:           %{RPM_NAME}
