@@ -63,11 +63,17 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         volumeMounts:
+        - name: time-mount
+          mountPath: /etc/localtime
+          readOnly: true
         - name: run
           mountPath: /run
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
       volumes:
+        - name: time-mount
+          hostPath:
+             path: /etc/localtime
         - name: run
           hostPath:
             path: /run
