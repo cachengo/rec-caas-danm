@@ -15,17 +15,18 @@
 FROM alpine:3.9
 MAINTAINER Levente Kale <levente.kale@nokia.com>
 
-ARG SRIOV
-ENV SRIOV_VERSION=$SRIOV
+ARG SRIOVDP
+ENV SRIOVDP_VERSION=$SRIOVDP
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 ENV GOOS=linux
 
 WORKDIR /
 
-RUN apk add --no-cache --virtual .tools ca-certificates gcc musl-dev go glide git \
+RUN apk add --no-cache jq \
+&& apk add --no-cache --virtual .tools ca-certificates gcc musl-dev go glide git \
 && mkdir -p $GOPATH/src/github.com/intel \
-&& git clone https://github.com/intel/sriov-network-device-plugin.git $GOPATH/src/github.com/intel/sriov-network-device-plugin --branch=v${SRIOV_VERSION} \
+&& git clone https://github.com/intel/sriov-network-device-plugin.git $GOPATH/src/github.com/intel/sriov-network-device-plugin --branch=v${SRIOVDP_VERSION} \
 && cd $GOPATH/src/github.com/intel/sriov-network-device-plugin \
 && glide --quiet install -v \
 && go install -a -ldflags '-extldflags "-static"' github.com/intel/sriov-network-device-plugin/cmd/sriovdp \
@@ -38,7 +39,7 @@ RUN apk add --no-cache --virtual .tools ca-certificates gcc musl-dev go glide gi
 && rm -rf /tmp/* \
 && rm -rf ~/.glide
 
-RUN chmod 700 /usr/local/bin/sriovdp 
+RUN chmod 700 /usr/local/bin/sriovdp
 
 LABEL io.k8s.display-name="SRIOV Network Device Plugin"
 ENTRYPOINT ["/usr/local/bin/sriovdp"]
