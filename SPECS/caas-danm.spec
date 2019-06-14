@@ -15,11 +15,11 @@
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 3.3.0
-%define RPM_MINOR_VERSION 2
+%define RPM_MINOR_VERSION 3
 %define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define CNI_VERSION 0.7.0
 %define go_version 1.12.1
-%define SRIOV_VERSION 6b53446e5781570c44e399cccb1fcdfa417f43a1
+%define SRIOV_VERSION 9e4c973b2ac517c64867e33d61aee152d70dc330
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 %define binary_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/binary-save
 %define docker_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-build
@@ -35,8 +35,8 @@ BuildArch:      x86_64
 Vendor:         %{_platform_vendor} and Nokia
 Source0:        %{name}-%{version}.tar.gz
 
-Requires: docker-ce >= 18.09.2, iputils
-BuildRequires: docker-ce >= 18.09.2, git
+Requires: docker-ce >= 18.09.2, iputils, rsync
+BuildRequires: docker-ce >= 18.09.2, rsync
 
 # more info at: https://fedoraproject.org/wiki/Packaging:Debuginfo No build ID note in Flannel
 %global debug_package %{nil}
