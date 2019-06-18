@@ -15,7 +15,7 @@
 %define COMPONENT sriovdp
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 2.0.0
-%define RPM_MINOR_VERSION 3
+%define RPM_MINOR_VERSION 4
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 
 Name:           %{RPM_NAME}
@@ -29,7 +29,7 @@ Vendor:         %{_platform_vendor} and intel/sriov-network-device-plugin unmodi
 Source0:        %{name}-%{version}.tar.gz
 
 Requires: docker-ce >= 18.09.2, rsync
-BuildRequires: docker-ce >= 18.09.2
+BuildRequires: docker-ce-cli >= 18.09.2, xz
 
 %description
 This RPM contains the sriov network device plugin container for CaaS subsystem.
@@ -54,7 +54,7 @@ docker build \
 
 mkdir -p %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/
 
-docker save %{COMPONENT}:%{IMAGE_TAG} | gzip -c > %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/%{COMPONENT}:%{IMAGE_TAG}.tar
+docker save %{COMPONENT}:%{IMAGE_TAG} | xz -z -T2 > %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/%{COMPONENT}:%{IMAGE_TAG}.tar
 
 docker rmi -f %{COMPONENT}:%{IMAGE_TAG}
 

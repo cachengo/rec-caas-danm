@@ -15,7 +15,7 @@
 %define COMPONENT flannel
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 0.11.0
-%define RPM_MINOR_VERSION 2
+%define RPM_MINOR_VERSION 3
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 
 Name:           %{RPM_NAME}
@@ -28,8 +28,8 @@ BuildArch:      x86_64
 Vendor:         %{_platform_vendor} and coreos/flannel unmodified
 Source0:        %{name}-%{version}.tar.gz
 
-Requires: docker-ce >= 18.09.2
-BuildRequires: docker-ce >= 18.09.2
+Requires: docker-ce >= 18.09.2, rsync
+BuildRequires: docker-ce-cli >= 18.09.2, xz
 
 %description
 This RPM contains the Flannel container image, and related deployment artifacts for the CaaS subsystem.
@@ -55,7 +55,7 @@ docker build \
 
 mkdir -p %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/
 
-docker save %{COMPONENT}:%{IMAGE_TAG} | gzip -c > %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/%{COMPONENT}:%{IMAGE_TAG}.tar
+docker save %{COMPONENT}:%{IMAGE_TAG} | xz -z -T2 > %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/%{COMPONENT}:%{IMAGE_TAG}.tar
 
 docker rmi -f %{COMPONENT}:%{IMAGE_TAG}
 

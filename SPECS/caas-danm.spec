@@ -15,7 +15,7 @@
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 3.3.0
-%define RPM_MINOR_VERSION 3
+%define RPM_MINOR_VERSION 4
 %define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define CNI_VERSION 0.7.0
 %define go_version 1.12.1
@@ -36,7 +36,7 @@ Vendor:         %{_platform_vendor} and Nokia
 Source0:        %{name}-%{version}.tar.gz
 
 Requires: docker-ce >= 18.09.2, iputils, rsync
-BuildRequires: docker-ce >= 18.09.2, rsync
+BuildRequires: docker-ce-cli >= 18.09.2, curl
 
 # more info at: https://fedoraproject.org/wiki/Packaging:Debuginfo No build ID note in Flannel
 %global debug_package %{nil}
