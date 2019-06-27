@@ -32,6 +32,7 @@ spec:
         tier: node
         {{ caas.kubernetes_component_label }}: flannel
     spec:
+      priorityClassName: "system-node-critical"
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
      # TODO: figure out why flannel needs to run with root to modify network settings on the host
@@ -62,6 +63,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: "10m"
         volumeMounts:
         - name: time-mount
           mountPath: /etc/localtime
