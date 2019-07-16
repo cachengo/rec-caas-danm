@@ -1,46 +1,37 @@
 ---
 # Copyright 2019 Nokia
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: copy DANM CRD templates to infra template directory
-  template:
-    src: "{{ item }}"
-    dest: "{{ caas.manifests_directory }}/{{ item }}"
-  with_items:
-    - danmep_crd_schema.yaml
-    - danmnet_crd_schema.yaml
-
-- name: create DanmEp CRD API in K8s
+- name: create Danm CRD APIs in K8s
   kubectl:
-    manifest: "{{ caas.manifests_directory }}/danmep_crd_schema.yaml"
+    manifest: "{{ item }}"
     state: present
+  with_fileglob: "{{ caas.danm_crd_dir }}/*"
 
-- name: wait and check DanmEp API availability
-  shell: "kubectl get crd --all-namespaces | grep danmeps | wc -l"
-  register: ep_result
-  until: ep_result.stdout == "1"
+- name: get CRD names
+  set_fact:
+    crd_name: "{{ lookup('file', item) | from_yaml | json_query('spec.names.plural') }}"
+  with_fileglob: "{{ caas.danm_crd_dir }}/*"
+  register: created_crds
+
+- name: wait and check Danm CRD availability
+  shell: "kubectl api-resources | grep {{ item.ansible_facts.crd_name }} | wc -l"
+  register: crd_result
+  until: crd_result.stdout == "1"
   retries: 60
   delay: 6
+  with_items: "{{ created_crds.results }}"
 
-- name: create DanmNet CRD API in K8s
-  kubectl:
-    manifest: "{{ caas.manifests_directory }}/danmnet_crd_schema.yaml"
-    state: present
-
-- name: wait and check DanmNet API availability
-  shell: "kubectl get crd --all-namespaces | grep danmnets | wc -l"
-  register: net_result
-  until: net_result.stdout == "1"
-  retries: 60
-  delay: 6
+- name: create tenant config
+  include_tasks: danm-tenant-configs.yaml

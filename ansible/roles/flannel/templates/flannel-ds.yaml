@@ -35,8 +35,7 @@ spec:
       priorityClassName: "system-node-critical"
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
-     # TODO: figure out why flannel needs to run with root to modify network settings on the host
-     # Some setcap calls might be missing on its binary?
+     # TODO: figure out why privileged mode is also not enough for flannel to modify network settings on the host (same problem as watcher)
      #securityContext:
      #     runAsUser: {{ caas.uid.flannel }}
       tolerations:

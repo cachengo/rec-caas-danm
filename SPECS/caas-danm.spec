@@ -14,8 +14,8 @@
 
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
-%define RPM_MAJOR_VERSION 3.3.0
-%define RPM_MINOR_VERSION 4
+%define RPM_MAJOR_VERSION 4.0.0
+%define RPM_MINOR_VERSION 0
 %define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define CNI_VERSION 0.7.0
 %define go_version 1.12.1
@@ -23,6 +23,7 @@
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 %define binary_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/binary-save
 %define docker_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-build
+%define build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/build
 %define built_binaries_dir /binary-save
 
 Name:           %{RPM_NAME}
@@ -79,6 +80,11 @@ docker cp ${builder_container}:%{built_binaries_dir}/sriov %{binary_build_dir}/
 docker rm -f ${builder_container}
 docker rmi cni-builder:%{IMAGE_TAG}
 
+# Collect DANM CRDs
+git clone https://github.com/nokia/danm.git %{build_dir}/danm
+cd %{build_dir}/danm
+git checkout %{DANM_VERSION}
+
 %install
 mkdir -p %{buildroot}/etc/cni/net.d/
 rsync -av cni-config/00-danm.conf %{buildroot}/etc/cni/net.d/00-danm.conf
@@ -101,12 +107,18 @@ install -D -m 0755 %{binary_build_dir}/flannel/flannel %{buildroot}/opt/cni/bin/
 # SRIOV
 install -D -m 0755 %{binary_build_dir}/sriov/sriov %{buildroot}/opt/cni/bin/sriov
 
+mkdir -p %{buildroot}/%{_caas_danm_crd_path}
+rsync -av %{build_dir}/danm/integration/crds/production/ %{buildroot}/%{_caas_danm_crd_path}
+
+
 %files
 # CONFIG
 /etc/cni/net.d/00-danm.conf
 /etc/cni/net.d/flannel.conf
 # CNI binaries
 /opt/cni/bin
+# DANM CRDs
+/%{_caas_danm_crd_path}
 
 %preun
 

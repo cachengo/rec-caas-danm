@@ -12,27 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-%define COMPONENT flannel
+%define COMPONENT danm-webhook
 %define RPM_NAME caas-%{COMPONENT}
-%define RPM_MAJOR_VERSION 0.11.0
-%define RPM_MINOR_VERSION 5
+%define RPM_MAJOR_VERSION 4.0.0
+%define RPM_MINOR_VERSION 0
+%define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 
 Name:           %{RPM_NAME}
 Version:        %{RPM_MAJOR_VERSION}
 Release:        %{RPM_MINOR_VERSION}%{?dist}
-Summary:        Containers as a Service flannel component
-License:        %{_platform_license} and MIT license and BSD and Apache License and ISC License and COMMON DEVELOPMENT AND DISTRIBUTION LICENSE and GNU Lesser General Public License v3.0 only
-URL:            https://github.com/coreos/flannel
+Summary:        Containers as a Service svcwatcher component
+License:        %{_platform_license} and BSD 3-Clause License
+URL:            https://github.com/nokia/danm
 BuildArch:      x86_64
-Vendor:         %{_platform_vendor} and coreos/flannel unmodified
+Vendor:         %{_platform_vendor} and Nokia
 Source0:        %{name}-%{version}.tar.gz
 
 Requires: docker-ce >= 18.09.2, rsync
 BuildRequires: docker-ce-cli >= 18.09.2, xz
 
 %description
-This RPM contains the Flannel container image, and related deployment artifacts for the CaaS subsystem.
+This RPM contains the DANM project's webhook sub-component for CaaS subsystem.
 
 %prep
 %autosetup
@@ -48,8 +49,7 @@ docker build \
   --build-arg http_proxy="${http_proxy}" \
   --build-arg https_proxy="${https_proxy}" \
   --build-arg no_proxy="${no_proxy}" \
-  --build-arg FLANNEL="%{RPM_MAJOR_VERSION}" \
-  --build-arg FLANNEL_ARCHITECTURE="amd64" \
+  --build-arg DANM_WEBHOOK_VERSION="%{DANM_VERSION}" \
   --tag %{COMPONENT}:%{IMAGE_TAG} \
   %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-build/%{COMPONENT}/
 
@@ -60,30 +60,17 @@ docker save %{COMPONENT}:%{IMAGE_TAG} | xz -z -T2 > %{_builddir}/%{RPM_NAME}-%{R
 docker rmi -f %{COMPONENT}:%{IMAGE_TAG}
 
 %install
-mkdir -p %{buildroot}/%{_caas_container_tar_path}
+mkdir -p %{buildroot}/%{_caas_container_tar_path}/
 rsync -av %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/%{COMPONENT}:%{IMAGE_TAG}.tar %{buildroot}/%{_caas_container_tar_path}/
-
-mkdir -p %{buildroot}/%{_playbooks_path}
-rsync -av ansible/playbooks/flannel.yaml %{buildroot}/%{_playbooks_path}/
-
-mkdir -p %{buildroot}/%{_roles_path}
-rsync -av ansible/roles/flannel %{buildroot}/%{_roles_path}/
 
 %files
 %{_caas_container_tar_path}/%{COMPONENT}:%{IMAGE_TAG}.tar
-%{_playbooks_path}/flannel.yaml
-%{_roles_path}/flannel
 
 %preun
 
 %post
-mkdir -p %{_postconfig_path}
-ln -sf %{_playbooks_path}/flannel.yaml %{_postconfig_path}/
 
 %postun
-if [ $1 -eq 0 ]; then
-    rm -f %{_postconfig_path}/flannel.yaml
-fi
 
 %clean
 rm -rf ${buildroot}
