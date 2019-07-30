@@ -16,7 +16,7 @@
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 4.0.0
-%define RPM_MINOR_VERSION 0
+%define RPM_MINOR_VERSION 1
 %define DANM_VERSION v%{RPM_MAJOR_VERSION}
 %define CNI_VERSION 0.7.0
 %define go_version 1.12.1
@@ -26,6 +26,8 @@
 %define docker_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-build
 %define build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/build
 %define built_binaries_dir /binary-save
+%define danm_components danm fakeipam
+%define cnis flannel sriov
 
 Name:           %{RPM_NAME}
 Version:        %{RPM_MAJOR_VERSION}
@@ -53,6 +55,7 @@ This RPM contains the DANM and related CNI binaries for CaaS subsystem.
 mkdir -p %{binary_build_dir}/cni
 curl -fsSL -k https://github.com/containernetworking/plugins/releases/download/v%{CNI_VERSION}/cni-plugins-amd64-v%{CNI_VERSION}.tgz  | tar zx --strip-components=1 -C %{binary_build_dir}/cni
 
+# Build DANM binaries
 docker build \
   --network=host \
   --no-cache \
@@ -65,19 +68,41 @@ docker build \
   --build-arg no_proxy="${no_proxy}" \
   --build-arg DANM_VERSION="%{DANM_VERSION}" \
   --build-arg go_version="%{go_version}" \
+  --build-arg binaries="%{built_binaries_dir}" \
+  --build-arg components="%{danm_components}" \
+  --tag danm-builder:%{IMAGE_TAG} \
+  %{docker_build_dir}/danm-builder/
+
+builder_container=$(docker run -id --rm --network=none --entrypoint=/bin/sh danm-builder:%{IMAGE_TAG})
+mkdir -p %{binary_build_dir}/danm
+for component in %{danm_components}; do
+  docker cp ${builder_container}:%{built_binaries_dir}/${component} %{binary_build_dir}/danm/
+done
+docker rm -f ${builder_container}
+docker rmi danm-builder:%{IMAGE_TAG}
+
+# Build CNI binaries
+docker build \
+  --network=host \
+  --no-cache \
+  --force-rm \
+  --build-arg HTTP_PROXY="${http_proxy}" \
+  --build-arg HTTPS_PROXY="${https_proxy}" \
+  --build-arg NO_PROXY="${no_proxy}" \
+  --build-arg http_proxy="${http_proxy}" \
+  --build-arg https_proxy="${https_proxy}" \
+  --build-arg no_proxy="${no_proxy}" \
+  --build-arg go_version="%{go_version}" \
   --build-arg SRIOV_VERSION="%{SRIOV_VERSION}" \
   --build-arg binaries="%{built_binaries_dir}" \
   --tag cni-builder:%{IMAGE_TAG} \
   %{docker_build_dir}/cni-builder/
 
 builder_container=$(docker run -id --rm --network=none --entrypoint=/bin/sh cni-builder:%{IMAGE_TAG})
-mkdir -p %{binary_build_dir}/danm
-docker cp ${builder_container}:%{built_binaries_dir}/danm %{binary_build_dir}/
-mkdir -p %{binary_build_dir}/flannel
-docker cp ${builder_container}:%{built_binaries_dir}/flannel %{binary_build_dir}/
-mkdir -p %{binary_build_dir}/sriov
-docker cp ${builder_container}:%{built_binaries_dir}/sriov %{binary_build_dir}/
-
+mkdir -p %{binary_build_dir}/built_cnis
+for cni in %{cnis}; do
+  docker cp ${builder_container}:%{built_binaries_dir}/${cni} %{binary_build_dir}/built_cnis/
+done
 docker rm -f ${builder_container}
 docker rmi cni-builder:%{IMAGE_TAG}
 
@@ -101,13 +126,15 @@ rsync -av \
       --exclude=portmap \
        %{binary_build_dir}/cni/* %{buildroot}/opt/cni/bin
 # DANM
-install -D -m 0755 %{binary_build_dir}/danm/danm %{buildroot}/opt/cni/bin/danm
-install -D -m 0755 %{binary_build_dir}/danm/fakeipam %{buildroot}/opt/cni/bin/fakeipam
-# FLANNEL
-install -D -m 0755 %{binary_build_dir}/flannel/flannel %{buildroot}/opt/cni/bin/flannel
-# SRIOV
-install -D -m 0755 %{binary_build_dir}/sriov/sriov %{buildroot}/opt/cni/bin/sriov
+for component in %{danm_components}; do
+  install -D -m 0755 %{binary_build_dir}/danm/${component} %{buildroot}/opt/cni/bin/${component}
+done
+# Other CNIs
+for cni in %{cnis}; do
+  install -D -m 0755 %{binary_build_dir}/built_cnis/${cni} %{buildroot}/opt/cni/bin/${cni}
+done
 
+# DANM CRDs
 mkdir -p %{buildroot}/%{_caas_danm_crd_path}
 rsync -av %{build_dir}/danm/integration/crds/production/ %{buildroot}/%{_caas_danm_crd_path}
 

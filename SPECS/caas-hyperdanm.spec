@@ -13,33 +13,41 @@
 # limitations under the License.
 
 %define CPU_ARCHITECTURE aarch64
-%define COMPONENT netwatcher
+%define COMPONENT hyperdanm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 4.0.0
 %define RPM_MINOR_VERSION 0
 %define DANM_VERSION v%{RPM_MAJOR_VERSION}
+%define go_version 1.12.1
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
+%define danm_components netwatcher svcwatcher webhook
+%define docker_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-build
+%define docker_save_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save
+%define binary_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/binary-save
+%define built_binaries_dir /binary-save
 
 Name:           %{RPM_NAME}
 Version:        %{RPM_MAJOR_VERSION}
 Release:        %{RPM_MINOR_VERSION}%{?dist}
-Summary:        Containers as a Service netwatcher component
+Summary:        Containers as a Service %{COMPONENT} component
 License:        %{_platform_license} and BSD 3-Clause License
 URL:            https://github.com/nokia/danm
 BuildArch:      %{CPU_ARCHITECTURE}
 Vendor:         %{_platform_vendor} and Nokia
 Source0:        %{name}-%{version}.tar.gz
 
-Requires: docker-ce >= 18.09.2, rsync
-BuildRequires: docker-ce-cli >= 18.09.2, xz
+Requires:       docker-ce >= 18.09.2, rsync
+BuildRequires:  docker-ce-cli >= 18.09.2, xz
+Obsoletes:      caas-danm-webhook <= 4.0.0, caas-netwatcher <= 4.0.0, caas-svcwatcher <= 4.0.0
 
 %description
-This RPM contains the netwatcher container image, and related deployment artifacts for the CaaS subsystem.
+This RPM contains the %{COMPONENT} container image, and related deployment artifacts for the CaaS subsystem.
 
 %prep
 %autosetup
 
 %build
+# Build DANM binaries
 docker build \
   --network=host \
   --no-cache \
@@ -50,19 +58,44 @@ docker build \
   --build-arg http_proxy="${http_proxy}" \
   --build-arg https_proxy="${https_proxy}" \
   --build-arg no_proxy="${no_proxy}" \
-  --build-arg NETWATCHER="%{DANM_VERSION}" \
+  --build-arg DANM_VERSION="%{DANM_VERSION}" \
+  --build-arg go_version="%{go_version}" \
+  --build-arg binaries="%{built_binaries_dir}" \
+  --build-arg components="%{danm_components}" \
+  --tag danm-builder:%{IMAGE_TAG} \
+  %{docker_build_dir}/danm-builder/
+
+builder_container=$(docker run -id --rm --network=none --entrypoint=/bin/sh danm-builder:%{IMAGE_TAG})
+for component in %{danm_components}; do
+  mkdir -p %{binary_build_dir}/
+  docker cp ${builder_container}:%{built_binaries_dir}/${component} %{binary_build_dir}/
+done
+docker rm -f ${builder_container}
+docker rmi danm-builder:%{IMAGE_TAG}
+
+# Build hyperdanm container image
+mkdir -p %{docker_build_dir}/%{COMPONENT}/danm_binaries
+rsync -av %{binary_build_dir}/* %{docker_build_dir}/%{COMPONENT}/danm_binaries
+docker build \
+  --network=host \
+  --no-cache \
+  --force-rm \
+  --build-arg HTTP_PROXY="${http_proxy}" \
+  --build-arg HTTPS_PROXY="${https_proxy}" \
+  --build-arg NO_PROXY="${no_proxy}" \
+  --build-arg http_proxy="${http_proxy}" \
+  --build-arg https_proxy="${https_proxy}" \
+  --build-arg no_proxy="${no_proxy}" \
   --tag %{COMPONENT}:%{IMAGE_TAG} \
-  %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-build/%{COMPONENT}/
+  %{docker_build_dir}/%{COMPONENT}/
 
-mkdir -p %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/
-
-docker save %{COMPONENT}:%{IMAGE_TAG} | xz -z -T2 > %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/%{COMPONENT}:%{IMAGE_TAG}.tar
-
+mkdir -p %{docker_save_dir}/
+docker save %{COMPONENT}:%{IMAGE_TAG} | xz -z -T2 > %{docker_save_dir}/%{COMPONENT}:%{IMAGE_TAG}.tar
 docker rmi -f %{COMPONENT}:%{IMAGE_TAG}
 
 %install
 mkdir -p %{buildroot}/%{_caas_container_tar_path}/
-rsync -av %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/docker-save/%{COMPONENT}:%{IMAGE_TAG}.tar %{buildroot}/%{_caas_container_tar_path}/
+rsync -av %{docker_save_dir}/%{COMPONENT}:%{IMAGE_TAG}.tar %{buildroot}/%{_caas_container_tar_path}/
 
 mkdir -p %{buildroot}/%{_playbooks_path}/
 rsync -av ansible/playbooks/danm_setup.yaml %{buildroot}/%{_playbooks_path}/
