@@ -44,7 +44,7 @@ hostDevices:
     {% set profile = network_profiles[profile_name] %}
     {% set caas_provider_networks = profile.get('provider_network_interfaces', {}) | filter_provider_networks_by_type('caas') %}
     {% set caas_sriov_provider_networks = profile.get('sriov_provider_networks', {}) | filter_provider_networks_by_type('caas') %}
-    {% for tenant_network in caas.get(tenant_networks, []) %}
+    {% for tenant_network in caas.get('tenant_networks', []) %}
       {% if tenant_network in caas_provider_networks | get_provider_networks %}
   {{ make_host_devices(caas_provider_networks.keys(), networking['provider_networks'][tenant_network]) | indent(2) -}}
       {% elif tenant_network in caas_sriov_provider_networks %}
