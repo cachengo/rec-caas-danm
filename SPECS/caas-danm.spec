@@ -16,9 +16,9 @@
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 4.0.0
-%define RPM_MINOR_VERSION 2
-%define DANM_VERSION v%{RPM_MAJOR_VERSION}
-%define CNI_VERSION 0.7.0
+%define RPM_MINOR_VERSION 3
+%define DANM_VERSION 5e15d4e322fc5ff89b06ac70bd83b5ce4c09d0df
+%define CNI_VERSION 0.8.1
 %define go_version 1.12.1
 %define SRIOV_VERSION 9e4c973b2ac517c64867e33d61aee152d70dc330
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
@@ -53,7 +53,7 @@ This RPM contains the DANM and related CNI binaries for CaaS subsystem.
 
 %build
 mkdir -p %{binary_build_dir}/cni
-curl -fsSL -k https://github.com/containernetworking/plugins/releases/download/v%{CNI_VERSION}/cni-plugins-amd64-v%{CNI_VERSION}.tgz  | tar zx --strip-components=1 -C %{binary_build_dir}/cni
+curl -fsSL -k https://github.com/containernetworking/plugins/releases/download/v%{CNI_VERSION}/cni-plugins-linux-amd64-v%{CNI_VERSION}.tgz  | tar zx --strip-components=1 -C %{binary_build_dir}/cni
 
 # Build DANM binaries
 docker build \
