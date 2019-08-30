@@ -16,10 +16,10 @@
 %define COMPONENT danm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 4.0.0
-%define RPM_MINOR_VERSION 3
+%define RPM_MINOR_VERSION 4
 %define DANM_VERSION 5e15d4e322fc5ff89b06ac70bd83b5ce4c09d0df
 %define CNI_VERSION 0.8.1
-%define go_version 1.12.1
+%define go_version 1.12.9
 %define SRIOV_VERSION 9e4c973b2ac517c64867e33d61aee152d70dc330
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 %define binary_build_dir %{_builddir}/%{RPM_NAME}-%{RPM_MAJOR_VERSION}/binary-save
