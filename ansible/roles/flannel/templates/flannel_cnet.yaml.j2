@@ -15,10 +15,9 @@ limitations under the License.
 #}
 ---
 apiVersion: danm.k8s.io/v1
-kind: TenantNetwork
+kind: ClusterNetwork
 metadata:
   name: {{ caas.danmnet_default_name }}
-  namespace: {{ caas.danmnet_default_namespace }}
 spec:
   NetworkID: {{ caas.danmnet_default_network_id }}
   NetworkType: {{ caas.danmnet_default_network_type }}
