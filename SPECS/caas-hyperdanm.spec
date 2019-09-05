@@ -16,8 +16,8 @@
 %define COMPONENT hyperdanm
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 4.0.0
-%define RPM_MINOR_VERSION 2
-%define DANM_VERSION 5e15d4e322fc5ff89b06ac70bd83b5ce4c09d0df
+%define RPM_MINOR_VERSION 3
+%define DANM_VERSION 687031341573550f387e109b273d8dd0cebf93bf
 %define go_version 1.12.9
 %define IMAGE_TAG %{RPM_MAJOR_VERSION}-%{RPM_MINOR_VERSION}
 %define danm_components netwatcher svcwatcher webhook
