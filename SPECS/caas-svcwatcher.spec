@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+%define CPU_ARCHITECTURE aarch64
 %define COMPONENT svcwatcher
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 4.0.0
@@ -25,7 +26,7 @@ Release:        %{RPM_MINOR_VERSION}%{?dist}
 Summary:        Containers as a Service svcwatcher component
 License:        %{_platform_license} and BSD 3-Clause License
 URL:            https://github.com/nokia/danm
-BuildArch:      x86_64
+BuildArch:      %{CPU_ARCHITECTURE}
 Vendor:         %{_platform_vendor} and Nokia
 Source0:        %{name}-%{version}.tar.gz
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+%define CPU_ARCHITECTURE aarch64
 %define COMPONENT flannel
 %define RPM_NAME caas-%{COMPONENT}
 %define RPM_MAJOR_VERSION 0.11.0
@@ -24,7 +25,7 @@ Release:        %{RPM_MINOR_VERSION}%{?dist}
 Summary:        Containers as a Service flannel component
 License:        %{_platform_license} and MIT license and BSD and Apache License and ISC License and COMMON DEVELOPMENT AND DISTRIBUTION LICENSE and GNU Lesser General Public License v3.0 only
 URL:            https://github.com/coreos/flannel
-BuildArch:      x86_64
+BuildArch:      %{CPU_ARCHITECTURE}
 Vendor:         %{_platform_vendor} and coreos/flannel unmodified
 Source0:        %{name}-%{version}.tar.gz
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM centos:7.6.1810
+FROM centos:7
 MAINTAINER Krisztian Lengyel <krisztian.lengyel@nokia.com>
 
 ARG DANM_VERSION
@@ -42,10 +42,10 @@ RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
       golang \
 &&    set -x \
 &&  mkdir -p ${go_install_dir} \
-&&  curl -fsSL -k https://dl.google.com/go/go${go_version}.linux-amd64.tar.gz | tar zx --strip-components=1 -C ${go_install_dir} \
+&&  curl -fsSL -k https://dl.google.com/go/go${go_version}.linux-arm64.tar.gz | tar zx --strip-components=1 -C ${go_install_dir} \
 &&  glide_version="$(curl -sSLf https://glide.sh/version)" \
 &&  mkdir -p ${glide_install_dir} \
-&&  curl -fsSL https://github.com/Masterminds/glide/releases/download/${glide_version}/glide-${glide_version}-linux-amd64.tar.gz | tar zx --strip-components=1 -C ${glide_install_dir} \
+&&  curl -fsSL https://github.com/Masterminds/glide/releases/download/${glide_version}/glide-${glide_version}-linux-arm64.tar.gz | tar zx --strip-components=1 -C ${glide_install_dir} \
 &&  mkdir -p $GOPATH/src/github.com/nokia \
 &&  git clone https://github.com/nokia/danm.git $GOPATH/src/github.com/nokia/danm \
 &&  cd $GOPATH/src/github.com/nokia/danm \
