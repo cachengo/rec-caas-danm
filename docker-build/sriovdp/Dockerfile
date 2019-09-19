@@ -18,13 +18,19 @@ MAINTAINER Levente Kale <levente.kale@nokia.com>
 ARG SRIOVDP
 ENV SRIOVDP_VERSION=$SRIOVDP
 ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ARG go_install_dir="/usr/local/go"
+ARG go_version
+ENV PATH $GOPATH/bin:$go_install_dir/bin:/usr/local/go/bin:$PATH
 ENV GOOS=linux
 
 WORKDIR /
 
 RUN apk add --no-cache jq \
-&& apk add --no-cache --virtual .tools ca-certificates gcc musl-dev go glide git \
+&& apk add --no-cache --virtual .tools ca-certificates gcc musl-dev go glide git bash curl tar \
+&& mkdir -p $go_install_dir \
+&& curl -fsSL -k https://dl.google.com/go/go${go_version}.src.tar.gz | tar zx --strip-components=1 -C ${go_install_dir} \
+&& cd ${go_install_dir}/src/ \
+&& ./make.bash \
 && mkdir -p $GOPATH/src/github.com/intel \
 && git clone https://github.com/intel/sriov-network-device-plugin.git $GOPATH/src/github.com/intel/sriov-network-device-plugin --branch=v${SRIOVDP_VERSION} \
 && cd $GOPATH/src/github.com/intel/sriov-network-device-plugin \
@@ -34,6 +40,7 @@ RUN apk add --no-cache jq \
 && rm -rf $GOPATH/src \
 && rm -rf $GOPATH/bin \
 && apk del .tools \
+&& rm -rf $go_install_dir \
 && rm -rf /var/cache/apk/* \
 && rm -rf /var/lib/apt/lists/* \
 && rm -rf /tmp/* \

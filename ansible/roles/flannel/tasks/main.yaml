@@ -33,12 +33,12 @@
     manifest: "{{ caas.manifests_directory }}/flannel-ds.yaml"
     state: present
 
-- name: template default TenantNetwork for kube-system namespace
+- name: template default ClusterNetwork for kube-system namespace
   template:
-    src: flannel_tnet.yaml.j2
-    dest: "{{ caas.manifests_directory }}/flannel-tnet_kube_system_ns.yaml"
+    src: flannel_cnet.yaml.j2
+    dest: "{{ caas.manifests_directory }}/flannel-cnet.yaml"
 
-- name: create TenantNetwork within kube-system namespace
+- name: create ClusterNetwork within kube-system namespace
   kubectl:
-    manifest: "{{ caas.manifests_directory }}/flannel-tnet_kube_system_ns.yaml"
+    manifest: "{{ caas.manifests_directory }}/flannel-cnet.yaml"
     state: present
